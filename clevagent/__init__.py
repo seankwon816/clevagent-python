@@ -133,6 +133,26 @@ def ping(
     )
 
 
+def log_prompt(text: str) -> None:
+    """
+    Record a prompt for semantic loop detection.
+
+    Hashes the prompt text (SHA-256, truncated to 16 hex chars) and stores it
+    in a rolling window of the last 5 hashes. These are sent with each heartbeat
+    so the server can detect repetitive prompt patterns (possible stuck loops).
+
+    Call this each time your agent receives or generates a new prompt/message.
+
+    Example:
+        user_msg = "Summarize the Q3 earnings report"
+        clevagent.log_prompt(user_msg)
+        response = client.messages.create(messages=[{"role": "user", "content": user_msg}])
+    """
+    import hashlib
+    h = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
+    _state.log_prompt_hash(h)
+
+
 def log_tool_call(name: str, args_summary: str = "") -> None:
     """
     Record a tool call for semantic drift analysis.

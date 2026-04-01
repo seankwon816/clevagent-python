@@ -1,6 +1,7 @@
 """Shared SDK state — single mutable object shared across all SDK modules."""
 
 import threading
+from collections import deque
 from typing import Optional
 
 
@@ -34,6 +35,9 @@ class _SDKState:
         self._tool_call_log: list = []
         self._TOOL_CALL_LOG_MAX = 20
 
+        # Prompt hash ring for semantic loop detection — last 5 SHA-256 truncated hashes
+        self._prompt_hashes: deque = deque(maxlen=5)
+
     def accumulate_cost(
         self,
         tokens: int = 0,
@@ -56,6 +60,11 @@ class _SDKState:
             if len(self._tool_call_log) > self._TOOL_CALL_LOG_MAX:
                 self._tool_call_log = self._tool_call_log[-self._TOOL_CALL_LOG_MAX:]
 
+    def log_prompt_hash(self, hash_str: str) -> None:
+        """Store a truncated prompt hash for semantic loop detection. Thread-safe. Max 5 retained (FIFO)."""
+        with self._lock:
+            self._prompt_hashes.append(hash_str)
+
     def flush_and_reset(self) -> dict:
         """Return accumulated data as a dict and reset counters. Thread-safe."""
         with self._lock:
@@ -65,12 +74,15 @@ class _SDKState:
                 "tool_calls": self._tool_calls if self._tool_calls else None,
                 "iteration_count": self._iteration_count,
                 "tool_call_log": list(self._tool_call_log) if self._tool_call_log else None,
+                "prompt_hashes": list(self._prompt_hashes) if self._prompt_hashes else None,
                 "agent_type": self.agent_type,  # static config — not reset
             }
             self._tokens = 0
             self._cost_usd = 0.0
             self._tool_calls = 0
             self._tool_call_log = []
+            # prompt_hashes are NOT reset — they're a rolling window (deque maxlen=5)
+            # so the server always sees the latest 5 across heartbeats
             # iteration_count is set externally by log_iteration() — don't reset
             return data
 
