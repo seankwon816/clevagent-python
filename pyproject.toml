@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clevagent"
+version = "0.4.0"
+description = "Monitor your AI agents. Heartbeat watchdog, loop detection, cost tracking."
+readme = "README.md"
+requires-python = ">=3.8"
+license = "MIT"
+keywords = ["ai", "agent", "monitoring", "heartbeat", "observability"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+    "Topic :: System :: Monitoring",
+]
+dependencies = [
+    "requests>=2.25.0",
+]
+
+[project.optional-dependencies]
+# Auto-cost tracking works if these are installed — not required
+openai = ["openai>=1.0.0"]
+anthropic = ["anthropic>=0.26.0"]
+all = ["openai>=1.0.0", "anthropic>=0.26.0"]
+
+[project.urls]
+Homepage = "https://clevagent.io"
+Documentation = "https://clevagent.io/docs"
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["clevagent*"]
