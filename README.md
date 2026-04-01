@@ -71,3 +71,31 @@ Auto-restart requires Docker and a `container_id` configured in the ClevAgent da
 - [Dashboard](https://clevagent.io)
 - [Documentation](https://clevagent.io/docs)
 - [Support](mailto:support@clevagent.io)
+
+## Framework Integrations
+
+### LangChain / LangGraph
+
+```python
+from clevagent.integrations.langchain import ClevAgentCallbackHandler
+
+handler = ClevAgentCallbackHandler()
+llm = ChatOpenAI(callbacks=[handler])
+
+# Automatically sends heartbeats with token usage after each LLM call
+# Also logs tool calls for semantic drift detection
+```
+
+### CrewAI
+
+```python
+from clevagent.integrations.crewai import clevagent_step_callback
+
+crew = Crew(
+    agents=[...],
+    tasks=[...],
+    step_callback=clevagent_step_callback,
+)
+
+# Pings ClevAgent after each agent step
+```
