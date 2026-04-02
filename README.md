@@ -145,3 +145,16 @@ clevagent.log_cost(tokens=1500, cost_usd=0.0023)
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+### AutoGen
+
+```python
+from clevagent.integrations.autogen import monitored_chat
+
+# Simple wrapper — registers monitoring on both agents
+result = monitored_chat(user_proxy, assistant, message="Analyze this data...")
+
+# Or register manually:
+from clevagent.integrations.autogen import clevagent_reply_func
+assistant.register_reply([Agent], clevagent_reply_func)
+```
